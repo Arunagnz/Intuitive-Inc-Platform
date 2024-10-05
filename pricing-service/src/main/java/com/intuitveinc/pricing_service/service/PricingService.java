@@ -1,10 +1,13 @@
 package com.intuitveinc.pricing_service.service;
 
 import com.intuitveinc.common.model.Pricing;
+import com.intuitveinc.common.model.Product;
 import com.intuitveinc.pricing_service.exception.PricingNotFoundException;
 import com.intuitveinc.pricing_service.repository.PricingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,8 +15,17 @@ import java.util.List;
 @Service
 public class PricingService implements IPricingService {
 
+    @Value("${product.service.url}")
+    private String productServiceUrl;
+
     @Autowired
     private PricingRepository pricingRepository;
+
+    private WebClient webClient;
+
+    public PricingService(WebClient.Builder builder) {
+        this.webClient = builder.build();
+    }
 
     @Override
     public List<Pricing> getAllPricing() {
@@ -34,6 +46,12 @@ public class PricingService implements IPricingService {
     @Override
     public Pricing createPricing(Pricing pricing) {
         pricing.setCreatedAt(LocalDateTime.now());
+        Product product = webClient.get()
+                .uri(productServiceUrl+"/api/products/"+pricing.getProduct().getId())
+                .retrieve()
+                .bodyToMono(Product.class)
+                .block();
+        pricing.setProduct(product);
         return pricingRepository.save(pricing);
     }
 
