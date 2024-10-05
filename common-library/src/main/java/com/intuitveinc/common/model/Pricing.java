@@ -1,5 +1,6 @@
 package com.intuitveinc.common.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,10 +21,13 @@ public class Pricing {
 
     private Double basePrice;
     private Double discount;
+
+    @Enumerated(EnumType.STRING)
     private PricingStrategy pricingStrategy;
 
     @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
+    @JsonBackReference
     private Product product;
 
     private LocalDateTime createdAt;
