@@ -6,6 +6,7 @@ import com.intuitveinc.common.model.Pricing;
 import com.intuitveinc.common.model.PricingStrategy;
 import com.intuitveinc.common.model.Product;
 import com.intuitveinc.common.repository.PartnerRepository;
+import com.intuitveinc.common.request.DynamicPricingRequest;
 import com.intuitveinc.common.strategy.DynamicPricingStrategy;
 import com.intuitveinc.common.strategy.MonthlyPricingStrategy;
 import com.intuitveinc.common.strategy.VolumeBasedPricingStrategy;
@@ -72,7 +73,7 @@ public class PricingService implements IPricingService {
                 .orElseThrow(() -> new PartnerNotFoundException("Product with ID " + partnerId + " not found"));
         pricing.setPartner(partner);
         Product product = webClient.get()
-                .uri(productServiceUrl+"/api/products/"+pricing.getProduct().getId())
+                .uri(productServiceUrl + "/api/products/" + pricing.getProduct().getId())
                 .retrieve()
                 .bodyToMono(Product.class)
                 .block();
@@ -101,14 +102,15 @@ public class PricingService implements IPricingService {
         return switch (strategy) {
             case MONTHLY -> new MonthlyPricingStrategy().calculatePrice(pricing.getBasePrice(), pricing.getDiscount());
             case YEARLY -> new YearlyPricingStrategy().calculatePrice(pricing.getBasePrice(), pricing.getDiscount());
-            case VOLUME_BASED -> new VolumeBasedPricingStrategy().calculatePrice(pricing.getBasePrice(), pricing.getDiscount());
+            case VOLUME_BASED ->
+                    new VolumeBasedPricingStrategy().calculatePrice(pricing.getBasePrice(), pricing.getDiscount());
             case DYNAMIC -> new DynamicPricingStrategy().calculatePrice(pricing.getBasePrice(), pricing.getDiscount());
             default -> pricing.getBasePrice(); // Fallback to base price
         };
     }
 
-    public List<Pricing> applyDynamicPricing(Long productId) {
-        logger.info("Starting dynamic pricing calculation for product: {}",productId);
+    public List<Pricing> applyDynamicPricing(Long productId, DynamicPricingRequest dynamicPricingRequest) {
+        logger.info("Starting dynamic pricing calculation for product: {}", productId);
         List<Pricing> pricingList = pricingRepository.findByProductId(productId);
 
         // Simulate supply and demand factors (hardcoded for now)
@@ -117,12 +119,15 @@ public class PricingService implements IPricingService {
 
         double priceAdjustmentFactor = 1.0;
 
-        // Simple logic: If demand is greater than supply, increase price by 5%
-        if (demand > supply) {
-            priceAdjustmentFactor = 1.05;  // Increase price by 5%
+        // Simple logic: If demand is greater than supply or Partner override, increase price by 5% or given %
+        if (dynamicPricingRequest.isOverrideDemand() || demand > supply) {
+            if (dynamicPricingRequest.getPercentage() > 0)
+                priceAdjustmentFactor += dynamicPricingRequest.getPercentage() / 100;
+            else
+                priceAdjustmentFactor = 1.05;
         }
 
-        for(Pricing pricing : pricingList) {
+        for (Pricing pricing : pricingList) {
             double finalPrice = pricing.getBasePrice() * priceAdjustmentFactor;
             pricing.setBasePrice(finalPrice);
             pricing.setUpdatedAt(LocalDateTime.now());
