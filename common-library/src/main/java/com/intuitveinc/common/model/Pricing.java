@@ -26,6 +26,10 @@ public class Pricing {
     private PricingStrategy pricingStrategy;
 
     @ManyToOne
+    @JoinColumn(name = "partner_id", nullable = false)
+    private Partner partner;
+
+    @ManyToOne
     @JoinColumn(name = "product_id", nullable = false)
     @JsonBackReference
     private Product product;

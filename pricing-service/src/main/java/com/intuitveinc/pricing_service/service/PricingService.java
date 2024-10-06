@@ -1,8 +1,11 @@
 package com.intuitveinc.pricing_service.service;
 
+import com.intuitveinc.common.exception.PartnerNotFoundException;
+import com.intuitveinc.common.model.Partner;
 import com.intuitveinc.common.model.Pricing;
 import com.intuitveinc.common.model.PricingStrategy;
 import com.intuitveinc.common.model.Product;
+import com.intuitveinc.common.repository.PartnerRepository;
 import com.intuitveinc.common.strategy.DynamicPricingStrategy;
 import com.intuitveinc.common.strategy.MonthlyPricingStrategy;
 import com.intuitveinc.common.strategy.VolumeBasedPricingStrategy;
@@ -29,6 +32,9 @@ public class PricingService implements IPricingService {
 
     @Autowired
     private PricingRepository pricingRepository;
+
+    @Autowired
+    private PartnerRepository partnerRepository;
 
     @Autowired
     private PricingMetrics pricingMetrics;
@@ -61,6 +67,10 @@ public class PricingService implements IPricingService {
     @Override
     public Pricing createPricing(Pricing pricing) {
         pricing.setCreatedAt(LocalDateTime.now());
+        Long partnerId = pricing.getPartner().getId();
+        Partner partner = partnerRepository.findById(partnerId)
+                .orElseThrow(() -> new PartnerNotFoundException("Product with ID " + partnerId + " not found"));
+        pricing.setPartner(partner);
         Product product = webClient.get()
                 .uri(productServiceUrl+"/api/products/"+pricing.getProduct().getId())
                 .retrieve()
@@ -115,6 +125,7 @@ public class PricingService implements IPricingService {
         for(Pricing pricing : pricingList) {
             double finalPrice = pricing.getBasePrice() * priceAdjustmentFactor;
             pricing.setBasePrice(finalPrice);
+            pricing.setUpdatedAt(LocalDateTime.now());
             logger.info("Price adjusted due to demand for pricing: {} Base Price: {} Adjusted Price: {}", pricing.getId(), pricing.getBasePrice(), finalPrice);
         }
         pricingRepository.saveAll(pricingList);

@@ -1,7 +1,10 @@
 package com.intuitveinc.product_service.service;
 
+import com.intuitveinc.common.exception.PartnerNotFoundException;
+import com.intuitveinc.common.model.Partner;
 import com.intuitveinc.common.model.Pricing;
 import com.intuitveinc.common.model.Product;
+import com.intuitveinc.common.repository.PartnerRepository;
 import com.intuitveinc.product_service.exception.ProductNotFoundException;
 import com.intuitveinc.product_service.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,9 @@ public class ProductService implements IProductService {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private PartnerRepository partnerRepository;
+
     private final WebClient webClient;
 
     public ProductService(WebClient.Builder builder) {
@@ -30,6 +36,10 @@ public class ProductService implements IProductService {
 
     @Override
     public Product createProduct(Product product) {
+        Long partnerId = product.getPartner().getId();
+        Partner partner = partnerRepository.findById(partnerId)
+                        .orElseThrow(() -> new PartnerNotFoundException("Product with ID " + partnerId + " not found"));
+        product.setPartner(partner);
         product.setCreatedAt(LocalDateTime.now());
         product.setUpdatedAt(LocalDateTime.now());
         return productRepository.save(product);

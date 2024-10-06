@@ -24,7 +24,10 @@ public class Product {
     private String sku;
     private Double basePrice;
     private String category;
-    private Long partnerId;
+
+    @ManyToOne
+    @JoinColumn(name = "partner_id", nullable = false)
+    private Partner partner;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<Pricing> pricing;
