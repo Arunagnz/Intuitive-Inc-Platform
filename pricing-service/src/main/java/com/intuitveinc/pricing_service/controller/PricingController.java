@@ -1,12 +1,14 @@
 package com.intuitveinc.pricing_service.controller;
 
 import com.intuitveinc.common.model.Pricing;
+import com.intuitveinc.common.request.DynamicPricingRequest;
 import com.intuitveinc.pricing_service.service.IPricingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/pricing")
@@ -52,8 +54,11 @@ public class PricingController {
     }
 
     @PostMapping("/dynamic/product/{productId}")
-    public ResponseEntity<List<Pricing>> applyDynamicPricing(@PathVariable Long productId) {
-        List<Pricing> adjustedPrices = pricingService.applyDynamicPricing(productId);
+    public ResponseEntity<List<Pricing>> applyDynamicPricing(@PathVariable Long productId, @RequestBody(required = false) DynamicPricingRequest dynamicPricingRequest) {
+        if (Objects.isNull(dynamicPricingRequest))
+            dynamicPricingRequest = new DynamicPricingRequest(0, false);
+
+        List<Pricing> adjustedPrices = pricingService.applyDynamicPricing(productId, dynamicPricingRequest);
         return ResponseEntity.ok(adjustedPrices);
     }
 }
