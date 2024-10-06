@@ -50,4 +50,10 @@ public class PricingController {
         pricingService.deletePricing(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/dynamic/product/{productId}")
+    public ResponseEntity<List<Pricing>> applyDynamicPricing(@PathVariable Long productId) {
+        List<Pricing> adjustedPrices = pricingService.applyDynamicPricing(productId);
+        return ResponseEntity.ok(adjustedPrices);
+    }
 }
