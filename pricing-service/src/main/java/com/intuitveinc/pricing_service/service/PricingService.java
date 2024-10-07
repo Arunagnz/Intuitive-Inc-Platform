@@ -48,57 +48,69 @@ public class PricingService implements IPricingService {
 
     @Override
     public List<Pricing> getAllPricing() {
+        logger.info("Fetching all pricing");
         return pricingRepository.findAll();
     }
 
     @Override
     public List<Pricing> getPricingByProductId(Long productId) {
+        logger.info("Fetching pricing with product id: {}", productId);
         return pricingRepository.findByProductId(productId);
     }
 
     @Override
     public Pricing getPricingById(Long id) {
+        logger.info("Fetching pricing with id: {}", id);
         Pricing pricing = pricingRepository.findById(id)
                 .orElseThrow(() -> new PricingNotFoundException("Pricing with ID " + id + " not found"));
         double finalPrice = calculateFinalPrice(pricing);
+        logger.info("Final price calculated for pricing: {} Base Price: {} Final Price: {}", pricing.getId(), pricing.getBasePrice(), finalPrice);
         pricing.setBasePrice(finalPrice);
         return pricing;
     }
 
     @Override
     public Pricing createPricing(Pricing pricing) {
+        logger.info("Creating pricing: {}", pricing);
         pricing.setCreatedAt(LocalDateTime.now());
         Long partnerId = pricing.getPartner().getId();
+        logger.info("Fetching partner with ID: {}", partnerId);
         Partner partner = partnerRepository.findById(partnerId)
                 .orElseThrow(() -> new PartnerNotFoundException("Product with ID " + partnerId + " not found"));
+        logger.info("Partner fetched: {}", partner);
         pricing.setPartner(partner);
         Product product = webClient.get()
                 .uri(productServiceUrl + "/api/products/" + pricing.getProduct().getId())
                 .retrieve()
                 .bodyToMono(Product.class)
                 .block();
+        logger.info("Product fetched: {}", product);
         pricing.setProduct(product);
         return pricingRepository.save(pricing);
     }
 
     @Override
     public Pricing updatePricing(Long id, Pricing pricingDetails) {
+        logger.info("Updating pricing with id: {}", id);
         Pricing pricing = getPricingById(id);
         pricing.setBasePrice(pricingDetails.getBasePrice());
         pricing.setDiscount(pricingDetails.getDiscount());
         pricing.setPricingStrategy(pricingDetails.getPricingStrategy());
         pricing.setUpdatedAt(LocalDateTime.now());
+        logger.info("Pricing updated: {}", pricing);
         return pricingRepository.save(pricing);
     }
 
     @Override
     public void deletePricing(Long id) {
+        logger.info("Deleting pricing with id: {}", id);
         pricingRepository.deleteById(id);
+        logger.info("Pricing deleted with id: {}", id);
     }
 
     public double calculateFinalPrice(Pricing pricing) {
         PricingStrategy strategy = pricing.getPricingStrategy();
-
+        logger.info("Calculating final price for pricing: {} Strategy: {}", pricing.getId(), strategy);
         return switch (strategy) {
             case MONTHLY -> new MonthlyPricingStrategy().calculatePrice(pricing.getBasePrice(), pricing.getDiscount());
             case YEARLY -> new YearlyPricingStrategy().calculatePrice(pricing.getBasePrice(), pricing.getDiscount());
@@ -127,6 +139,7 @@ public class PricingService implements IPricingService {
                 priceAdjustmentFactor = 1.05;
         }
 
+        logger.info("Price adjustment factor: {}", priceAdjustmentFactor);
         for (Pricing pricing : pricingList) {
             double finalPrice = pricing.getBasePrice() * priceAdjustmentFactor;
             pricing.setBasePrice(finalPrice);
@@ -134,6 +147,7 @@ public class PricingService implements IPricingService {
             logger.info("Price adjusted due to demand for pricing: {} Base Price: {} Adjusted Price: {}", pricing.getId(), pricing.getBasePrice(), finalPrice);
         }
         pricingRepository.saveAll(pricingList);
+        logger.info("Dynamic pricing applied for product: {}", productId);
         pricingMetrics.recordDynamicPriceAdjustment();
         return pricingList;
     }

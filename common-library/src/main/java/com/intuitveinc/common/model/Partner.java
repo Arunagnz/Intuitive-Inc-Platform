@@ -1,9 +1,7 @@
 package com.intuitveinc.common.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -21,8 +19,13 @@ public class Partner {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Name is required")
     private String name;
+
+    @Email(message = "Invalid email address")
     private String email;
+
+    @NotBlank(message = "Address is required")
     private String address;
 
     private LocalDateTime createdAt;
