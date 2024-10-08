@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString
 public class Pricing {
 
     @Id
@@ -46,4 +45,18 @@ public class Pricing {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Override
+    public String toString() {
+        return "Pricing{" +
+                "id=" + id +
+                ", basePrice=" + basePrice +
+                ", discount=" + discount +
+                ", pricingStrategy=" + pricingStrategy +
+                ", partner=" + partner.getId() +
+                ", product=" + product.getId() +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }

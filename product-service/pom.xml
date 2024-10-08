@@ -74,6 +74,11 @@
 			<artifactId>flyway-core</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>8.0.1.Final</version>
+		</dependency>
+		<dependency>
 			<groupId>com.intuitveinc</groupId>
 			<artifactId>common-library</artifactId>
 			<version>0.0.1-SNAPSHOT</version>

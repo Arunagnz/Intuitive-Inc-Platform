@@ -1,5 +1,6 @@
 package com.intuitveinc.pricing_service.controller;
 
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.intuitveinc.common.model.Pricing;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -45,7 +47,7 @@ public class PricingController {
     }
 
     @PostMapping
-    public ResponseEntity<Pricing> createPricing(@RequestBody Pricing pricing) {
+    public ResponseEntity<Pricing> createPricing(@Valid @RequestBody Pricing pricing) {
         logger.info("Creating pricing: {}", pricing);
         Pricing createdPricing = pricingService.createPricing(pricing);
         logger.info("Pricing created: {}", createdPricing);
@@ -53,7 +55,7 @@ public class PricingController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Pricing> updatePricing(@PathVariable Long id, @RequestBody Pricing pricingDetails) {
+    public ResponseEntity<Pricing> updatePricing(@PathVariable Long id,@Valid @RequestBody Pricing pricingDetails) {
         logger.info("Updating pricing with id: {}", id);
         Pricing updatedPricing = pricingService.updatePricing(id, pricingDetails);
         logger.info("Pricing updated: {}", updatedPricing);
@@ -69,14 +71,14 @@ public class PricingController {
     }
 
     @PostMapping("/dynamic/product/{productId}")
-    public ResponseEntity<List<Pricing>> applyDynamicPricing(@PathVariable Long productId, @RequestBody(required = false) DynamicPricingRequest dynamicPricingRequest) {
+    public ResponseEntity<List<Pricing>> applyDynamicPricing(@PathVariable Long productId,@Valid @RequestBody(required = false) DynamicPricingRequest dynamicPricingRequest) {
         logger.info("Applying dynamic pricing for product with id: {}", productId);
         if (Objects.isNull(dynamicPricingRequest))
             dynamicPricingRequest = new DynamicPricingRequest(0, false);
         
         logger.info("Dynamic pricing request: {}", dynamicPricingRequest);
         List<Pricing> adjustedPrices = pricingService.applyDynamicPricing(productId, dynamicPricingRequest);
-        logger.info("Dynamic pricing applied: {}", adjustedPrices);
+        logger.info("Dynamic pricing applied: {}", adjustedPrices.getFirst());
         return ResponseEntity.ok(adjustedPrices);
     }
 }

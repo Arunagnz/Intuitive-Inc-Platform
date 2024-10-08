@@ -18,8 +18,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -76,12 +78,17 @@ public class PricingService implements IPricingService {
         Long partnerId = pricing.getPartner().getId();
         logger.info("Fetching partner with ID: {}", partnerId);
         Partner partner = partnerRepository.findById(partnerId)
-                .orElseThrow(() -> new PartnerNotFoundException("Product with ID " + partnerId + " not found"));
+                .orElseThrow(() -> new PartnerNotFoundException("Partner with ID " + partnerId + " not found"));
         logger.info("Partner fetched: {}", partner);
         pricing.setPartner(partner);
+        Long productId = pricing.getProduct().getId();
         Product product = webClient.get()
-                .uri(productServiceUrl + "/api/products/" + pricing.getProduct().getId())
+                .uri(productServiceUrl + "/api/products/" + productId)
                 .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
+                        Mono.error(new RuntimeException("Product with ID " + productId + " not found")))
+                .onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
+                        Mono.error(new RuntimeException("Downstream unreachable, Try again in sometime")))
                 .bodyToMono(Product.class)
                 .block();
         logger.info("Product fetched: {}", product);

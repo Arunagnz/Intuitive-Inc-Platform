@@ -40,7 +40,6 @@ public class Product {
     @JoinColumn(name = "partner_id", nullable = false)
     private Partner partner;
 
-    @NotNull(message = "Pricing is required")
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<Pricing> pricing;
 

@@ -1,5 +1,6 @@
 package com.intuitveinc.product_service.controller;
 
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.intuitveinc.common.model.Product;
@@ -19,7 +20,7 @@ public class ProductController {
     private IProductService productService;
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
         logger.info("Creating product: {}", product);
         Product createdProduct = productService.createProduct(product);
         logger.info("Product created: {}", createdProduct);
@@ -43,7 +44,7 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
+    public ResponseEntity<Product> updateProduct(@PathVariable Long id,@Valid @RequestBody Product productDetails) {
         logger.info("Updating product with id: {}", id);
         Product updatedProduct = productService.updateProduct(id, productDetails);
         logger.info("Product updated: {}", updatedProduct);
