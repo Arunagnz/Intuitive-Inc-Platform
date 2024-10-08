@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString
 @ValidDateRange
 @EitherOr
 public class Promotion {
@@ -50,4 +49,20 @@ public class Promotion {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Override
+    public String toString() {
+        return "Promotion{" +
+                "id=" + id +
+                ", partner=" + partner.getId() +
+                ", product=" + product.getId() +
+                ", description='" + description + '\'' +
+                ", percentage=" + percentage +
+                ", flatRate=" + flatRate +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }

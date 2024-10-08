@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 @Entity
@@ -13,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString
 public class Product {
 
     @Id
@@ -45,4 +45,27 @@ public class Product {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", sku='" + sku + '\'' +
+                ", basePrice=" + basePrice +
+                ", category='" + category + '\'' +
+                ", partner=" + partner.getId() +
+                ", pricing=" + Arrays.toString(getPricingIds(pricing)) +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
+
+    private double[] getPricingIds(List<Pricing> pricingList) {
+        double[] pricingIds = new double[pricingList.size()];
+        for(int i = 0; i < pricingList.size();i++)
+            pricingIds[i] = pricingList.get(i).getId();
+        return pricingIds;
+    }
 }

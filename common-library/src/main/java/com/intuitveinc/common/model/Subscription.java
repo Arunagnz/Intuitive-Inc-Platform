@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode
-@ToString
 @ValidDateRange
 public class Subscription {
 
@@ -47,4 +46,19 @@ public class Subscription {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @Override
+    public String toString() {
+        return "Subscription{" +
+                "id=" + id +
+                ", partner=" + partner.getId() +
+                ", product=" + product.getId() +
+                ", customerId=" + customerId +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", soldPrice=" + soldPrice +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
