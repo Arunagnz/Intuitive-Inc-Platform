@@ -13,4 +13,5 @@ public interface IPricingService {
     Pricing updatePricing(Long id, Pricing pricing);
     void deletePricing(Long id);
     List<Pricing> applyDynamicPricing(Long productId, DynamicPricingRequest dynamicPricingRequest);
+    List<Pricing> applyPromotionPricing(Long productId);
 }

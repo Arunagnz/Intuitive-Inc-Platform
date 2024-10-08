@@ -78,7 +78,15 @@ public class PricingController {
         
         logger.info("Dynamic pricing request: {}", dynamicPricingRequest);
         List<Pricing> adjustedPrices = pricingService.applyDynamicPricing(productId, dynamicPricingRequest);
-        logger.info("Dynamic pricing applied: {}", adjustedPrices.getFirst());
+        logger.info("Dynamic pricing applied: {}", adjustedPrices);
+        return ResponseEntity.ok(adjustedPrices);
+    }
+
+    @PostMapping("/promotion/product/{productId}")
+    public ResponseEntity<List<Pricing>> applyPromotionPricing(@PathVariable Long productId) {
+        logger.info("Applying promotion pricing for product with id: {}", productId);
+        List<Pricing> adjustedPrices = pricingService.applyPromotionPricing(productId);
+        logger.info("Promotion pricing applied: {}", adjustedPrices);
         return ResponseEntity.ok(adjustedPrices);
     }
 }

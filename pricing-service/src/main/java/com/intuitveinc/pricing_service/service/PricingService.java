@@ -1,11 +1,9 @@
 package com.intuitveinc.pricing_service.service;
 
 import com.intuitveinc.common.exception.PartnerNotFoundException;
-import com.intuitveinc.common.model.Partner;
-import com.intuitveinc.common.model.Pricing;
-import com.intuitveinc.common.model.PricingStrategy;
-import com.intuitveinc.common.model.Product;
+import com.intuitveinc.common.model.*;
 import com.intuitveinc.common.repository.PartnerRepository;
+import com.intuitveinc.common.repository.PromotionRepository;
 import com.intuitveinc.common.request.DynamicPricingRequest;
 import com.intuitveinc.common.strategy.DynamicPricingStrategy;
 import com.intuitveinc.common.strategy.MonthlyPricingStrategy;
@@ -40,6 +38,9 @@ public class PricingService implements IPricingService {
     private PartnerRepository partnerRepository;
 
     @Autowired
+    private PromotionRepository promotionRepository;
+
+    @Autowired
     private PricingMetrics pricingMetrics;
 
     private WebClient webClient;
@@ -57,7 +58,13 @@ public class PricingService implements IPricingService {
     @Override
     public List<Pricing> getPricingByProductId(Long productId) {
         logger.info("Fetching pricing with product id: {}", productId);
-        return pricingRepository.findByProductId(productId);
+        List<Pricing> pricingList = pricingRepository.findByProductId(productId);
+        for(Pricing pricing : pricingList) {
+            double finalPrice = calculateFinalPrice(pricing);
+            logger.info("Final price calculated for pricing: {} Base Price: {} Final Price: {}", pricing.getId(), pricing.getBasePrice(), finalPrice);
+            pricing.setBasePrice(finalPrice);
+        }
+        return pricingList;
     }
 
     @Override
@@ -132,30 +139,67 @@ public class PricingService implements IPricingService {
         logger.info("Starting dynamic pricing calculation for product: {}", productId);
         List<Pricing> pricingList = pricingRepository.findByProductId(productId);
 
-        // Simulate supply and demand factors (hardcoded for now)
-        double supply = 50;  // e.g., current stock level -> Inventory service call
-        double demand = 100; // e.g., recent customer interest -> Customer activity tracking
-
         double priceAdjustmentFactor = 1.0;
 
-        // Simple logic: If demand is greater than supply or Partner override, increase price by 5% or given %
-        if (dynamicPricingRequest.isOverrideDemand() || demand > supply) {
+        // Simple logic: If demand is greater than supply or Partner override, increase price by 10% or given %
+        if (dynamicPricingRequest.isOverrideDemand() || isHighDemand()) {
             if (dynamicPricingRequest.getPercentage() > 0)
                 priceAdjustmentFactor += dynamicPricingRequest.getPercentage() / 100;
             else
-                priceAdjustmentFactor = 1.05;
+                priceAdjustmentFactor = 1.10;
         }
 
         logger.info("Price adjustment factor: {}", priceAdjustmentFactor);
         for (Pricing pricing : pricingList) {
-            double finalPrice = pricing.getBasePrice() * priceAdjustmentFactor;
+            double finalPrice = calculateFinalPrice(pricing) * priceAdjustmentFactor;
             pricing.setBasePrice(finalPrice);
             pricing.setUpdatedAt(LocalDateTime.now());
             logger.info("Price adjusted due to demand for pricing: {} Base Price: {} Adjusted Price: {}", pricing.getId(), pricing.getBasePrice(), finalPrice);
         }
-        pricingRepository.saveAll(pricingList);
         logger.info("Dynamic pricing applied for product: {}", productId);
         pricingMetrics.recordDynamicPriceAdjustment();
         return pricingList;
+    }
+
+    public List<Pricing> applyPromotionPricing(Long productId) {
+        logger.info("Starting promotion pricing calculation for product: {}", productId);
+        List<Pricing> pricingList = pricingRepository.findByProductId(productId);
+
+        if(pricingList.isEmpty()) {
+            logger.info("No pricing found for the product: {}", productId);
+            return pricingList;
+        }
+
+        Long partnerId = pricingList.getFirst().getPartner().getId();
+        List<Promotion> promotions = promotionRepository.findByPartnerIdAndProductId(partnerId, productId, LocalDateTime.now());
+
+        if(promotions.isEmpty()) {
+            logger.info("No promotions found for the product: {}", productId);
+            return pricingList;
+        }
+
+        for (Pricing pricing : pricingList) {
+            double basePrice = calculateFinalPrice(pricing);
+            for (Promotion promotion : promotions) {
+                double discount = 0.0;
+                if (promotion.getPercentage() > 0) {
+                    discount = basePrice * (promotion.getPercentage() / 100);
+                }
+                if (promotion.getFlatRate() > 0 && discount > promotion.getFlatRate()) {
+                    discount = promotion.getFlatRate();
+                }
+                basePrice -= discount;
+            }
+            pricing.setBasePrice(basePrice);
+        }
+        return pricingList;
+    }
+
+    private boolean isHighDemand() {
+        // Simulate supply and demand factors (hardcoded for now)
+        double supply = 50;  // e.g., current stock level -> Inventory service call
+        double demand = 100; // e.g., recent customer interest -> Customer activity tracking
+
+        return demand > supply;
     }
 }
