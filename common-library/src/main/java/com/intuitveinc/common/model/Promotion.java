@@ -3,7 +3,6 @@ package com.intuitveinc.common.model;
 import com.intuitveinc.common.validator.EitherOr;
 import com.intuitveinc.common.validator.ValidDateRange;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
