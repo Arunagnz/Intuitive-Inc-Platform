@@ -25,6 +25,13 @@ public class Partner {
     @Email(message = "Invalid email address")
     private String email;
 
+    @Size(min = 8, max = 16, message = "Access key must be between 8 and 16 characters")
+    @JsonIgnore
+    private String accessKey;
+
+    @JsonIgnore
+    private String hashedSecretKey;
+
     @NotBlank(message = "Address is required")
     private String address;
 
