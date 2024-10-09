@@ -43,30 +43,48 @@ public class PromotionService implements IPromotionService {
     public Promotion createPromotion(Promotion promotion) {
         logger.info("Creating promotion: {}", promotion);
 
+        // Fetch Partner asynchronously from Optional
         Long partnerId = promotion.getPartner().getId();
         logger.info("Fetching partner with ID: {}", partnerId);
-        Partner partner = partnerRepository.findById(partnerId)
-                .orElseThrow(() -> new PartnerNotFoundException("Product with ID " + partnerId + " not found"));
-        logger.info("Partner fetched: {}", partner);
-        promotion.setPartner(partner);
 
+        Mono<Partner> partnerMono = Mono.justOrEmpty(partnerRepository.findById(partnerId))
+                .switchIfEmpty(Mono.error(new PartnerNotFoundException("Partner with ID " + partnerId + " not found")));
+
+        // Fetch Product asynchronously using WebClient
         Long productId = promotion.getProduct().getId();
-        Product product = webClient.get()
+        Mono<Product> productMono = webClient.get()
                 .uri(productServiceUrl + "/api/products/" + productId)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse ->
-                        Mono.error(new RuntimeException("Product with ID " + productId + " not found")))
+                        Mono.error(new RuntimeException("Product with ID " + productId + " not found"))
+                )
                 .onStatus(HttpStatusCode::is5xxServerError, clientResponse ->
-                        Mono.error(new RuntimeException("Downstream unreachable, Try again in sometime")))
-                .bodyToMono(Product.class)
+                        Mono.error(new RuntimeException("Downstream unreachable, try again later"))
+                )
+                .bodyToMono(Product.class);
+
+        // Combine both partnerMono and productMono to ensure both complete before continuing
+        return Mono.zip(partnerMono, productMono)
+                .flatMap(tuple -> {
+                    Partner partner = tuple.getT1();
+                    Product product = tuple.getT2();
+
+                    // Set the partner and product on the promotion
+                    promotion.setPartner(partner);
+                    promotion.setProduct(product);
+                    promotion.setCreatedAt(LocalDateTime.now());
+                    promotion.setUpdatedAt(LocalDateTime.now());
+
+                    logger.info("Promotion created: {}", promotion);
+
+                    // Save promotion asynchronously
+                    return Mono.just(promotionRepository.save(promotion));
+                })
+                .doOnError(error -> logger.error("Error occurred while creating promotion: {}", error.getMessage()))
+                .doOnSuccess(savedPromotion -> logger.info("Promotion successfully saved: {}", savedPromotion))
                 .block();
-        logger.info("Product fetched: {}", product);
-        promotion.setProduct(product);
-        promotion.setCreatedAt(LocalDateTime.now());
-        promotion.setUpdatedAt(LocalDateTime.now());
-        logger.info("Promotion created: {}", promotion);
-        return promotionRepository.save(promotion);
     }
+
 
     @Override
     public Promotion getPromotionById(Long id) {

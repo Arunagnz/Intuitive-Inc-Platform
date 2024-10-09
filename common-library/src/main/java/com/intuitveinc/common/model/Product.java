@@ -1,5 +1,6 @@
 package com.intuitveinc.common.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -41,6 +42,7 @@ public class Product {
     private Partner partner;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Pricing> pricing;
 
     private LocalDateTime createdAt;

@@ -62,8 +62,8 @@ public class ProductService implements IProductService {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<Pricing>>() {})
                 .block();
-        logger.info("Pricing fetched: {}", pricing);
         product.setPricing(pricing);
+        logger.info("Product fetched: {}", product);
         return product;
     }
 
