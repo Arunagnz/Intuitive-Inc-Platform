@@ -1,5 +1,14 @@
 package com.intuitveinc.product_service.controller;
 
+import com.intuitveinc.common.request.LoginRequest;
+import com.intuitveinc.common.response.AuthResponse;
+import com.intuitveinc.product_service.service.PartnerService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/auth")

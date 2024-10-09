@@ -4,105 +4,105 @@ import com.intuitveinc.common.model.Product;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class ProductServiceTest {
 
     @Test
     void testCreateProduct() {
-        IProductService IProductService = Mockito.mock(IProductService.class);
+        IProductService productService = Mockito.mock(IProductService.class);
         Product product = new Product();
         product.setName("Refrigerator");
-        Mockito.when(IProductService.createProduct(product)).thenReturn(product);
+        Mockito.when(productService.createProduct(product)).thenReturn(product);
 
-        Product createdProduct = IProductService.createProduct(product);
+        Product createdProduct = productService.createProduct(product);
         System.out.println(createdProduct);
         assertEquals("Refrigerator", createdProduct.getName());
 
-        Mockito.when(IProductService.createProduct(product)).thenThrow(new RuntimeException("Product already exists"));
-        assertThrows(RuntimeException.class, () -> IProductService.createProduct(product));
+        Mockito.when(productService.createProduct(product)).thenThrow(new RuntimeException("Product already exists"));
+        assertThrows(RuntimeException.class, () -> productService.createProduct(product));
 
-        Mockito.when(IProductService.createProduct(product)).thenReturn(null);
-        assertNull(IProductService.createProduct(product));
+        Mockito.when(productService.createProduct(product)).thenReturn(null);
+        assertNull(productService.createProduct(product));
 
-        Mockito.when(IProductService.createProduct(null)).thenThrow(new RuntimeException("Product cannot be null"));
-        assertThrows(RuntimeException.class, () -> IProductService.createProduct(null));
+        Mockito.when(productService.createProduct(null)).thenThrow(new RuntimeException("Product cannot be null"));
+        assertThrows(RuntimeException.class, () -> productService.createProduct(null));
     }
 
     @Test
     void testGetProduct() {
-        IProductService IProductService = Mockito.mock(IProductService.class);
+        IProductService productService = Mockito.mock(IProductService.class);
         Product product = new Product();
         product.setName("Refrigerator");
-        Mockito.when(IProductService.getProduct(1L)).thenReturn(product);
+        Mockito.when(productService.getProductById(1L)).thenReturn(product);
 
-        Product fetchedProduct = IProductService.getProduct(1L);
+        Product fetchedProduct = productService.getProductById(1L);
         System.out.println(fetchedProduct);
         assertEquals("Refrigerator", fetchedProduct.getName());
 
-        Mockito.when(IProductService.getProduct(1L)).thenThrow(new RuntimeException("Product not found"));
-        assertThrows(RuntimeException.class, () -> IProductService.getProduct(1L));
+        Mockito.when(productService.getProductById(1L)).thenThrow(new RuntimeException("Product not found"));
+        assertThrows(RuntimeException.class, () -> productService.getProductById(1L));
 
-        Mockito.when(IProductService.getProduct(1L)).thenReturn(null);
-        assertNull(IProductService.getProduct(1L));
+        Mockito.when(productService.getProductById(1L)).thenReturn(null);
+        assertNull(productService.getProductById(1L));
     }
 
     @Test
     void testUpdateProduct() {
-        IProductService IProductService = Mockito.mock(IProductService.class);
+        IProductService productService = Mockito.mock(IProductService.class);
         Product product = new Product();
         product.setName("Refrigerator");
-        Mockito.when(IProductService.updateProduct(1L, product)).thenReturn(product);
+        Mockito.when(productService.updateProduct(1L, product)).thenReturn(product);
 
-        Product updatedProduct = IProductService.updateProduct(1L, product);
+        Product updatedProduct = productService.updateProduct(1L, product);
         System.out.println(updatedProduct);
         assertEquals("Refrigerator", updatedProduct.getName());
 
-        Mockito.when(IProductService.updateProduct(1L, product)).thenThrow(new RuntimeException("Product not found"));
-        assertThrows(RuntimeException.class, () -> IProductService.updateProduct(1L, product));
+        Mockito.when(productService.updateProduct(1L, product)).thenThrow(new RuntimeException("Product not found"));
+        assertThrows(RuntimeException.class, () -> productService.updateProduct(1L, product));
 
-        Mockito.when(IProductService.updateProduct(1L, product)).thenReturn(null);
-        assertNull(IProductService.updateProduct(1L, product));
+        Mockito.when(productService.updateProduct(1L, product)).thenReturn(null);
+        assertNull(productService.updateProduct(1L, product));
     }
 
     @Test
     void testDeleteProduct() {
-        IProductService IProductService = Mockito.mock(IProductService.class);
-        Product product = new Product();
-        product.setName("Refrigerator");
-        Mockito.when(IProductService.deleteProduct(1L)).thenReturn(product);
+        IProductService productService = Mockito.mock(IProductService.class);
 
-        Product deletedProduct = IProductService.deleteProduct(1L);
-        System.out.println(deletedProduct);
-        assertEquals("Refrigerator", deletedProduct.getName());
+        Mockito.doNothing().when(productService).deleteProduct(1L);
 
-        Mockito.when(IProductService.deleteProduct(1L)).thenThrow(new RuntimeException("Product not found"));
-        assertThrows(RuntimeException.class, () -> IProductService.deleteProduct(1L));
+        productService.deleteProduct(1L);
+        Mockito.verify(productService, Mockito.times(1)).deleteProduct(1L);
 
-        Mockito.when(IProductService.deleteProduct(1L)).thenReturn(null);
-        assertNull(IProductService.deleteProduct(1L));
+        Mockito.doThrow(new RuntimeException("Product not found"))
+                .when(productService).deleteProduct(1L);
+
+        assertThrows(RuntimeException.class, () -> productService.deleteProduct(1L));
     }
 
     @Test
     void testGetAllProducts() {
-        IProductService IProductService = Mockito.mock(IProductService.class);
+        IProductService productService = Mockito.mock(IProductService.class);
         Product product1 = new Product();
         product1.setName("Refrigerator");
         Product product2 = new Product();
         product2.setName("Washing Machine");
-        Mockito.when(IProductService.getAllProducts()).thenReturn(List.of(product1, product2));
+        Mockito.when(productService.getAllProducts()).thenReturn(List.of(product1, product2));
 
-        List<Product> products = IProductService.getAllProducts();
+        List<Product> products = productService.getAllProducts();
         System.out.println(products);
         assertEquals(2, products.size());
 
-        Mockito.when(IProductService.getAllProducts()).thenReturn(Collections.emptyList());
-        assertEquals(0, IProductService.getAllProducts().size());
+        Mockito.when(productService.getAllProducts()).thenReturn(Collections.emptyList());
+        assertEquals(0, productService.getAllProducts().size());
 
-        Mockito.when(IProductService.getAllProducts()).thenReturn(null);
-        assertNull(IProductService.getAllProducts());
+        Mockito.when(productService.getAllProducts()).thenReturn(null);
+        assertNull(productService.getAllProducts());
 
-        Mockito.when(IProductService.getAllProducts()).thenThrow(new RuntimeException("No products found"));
-        assertThrows(RuntimeException.class, () -> IProductService.getAllProducts());
+        Mockito.when(productService.getAllProducts()).thenThrow(new RuntimeException("No products found"));
+        assertThrows(RuntimeException.class, productService::getAllProducts);
     }
 }

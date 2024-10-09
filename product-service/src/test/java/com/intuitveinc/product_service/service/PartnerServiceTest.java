@@ -1,5 +1,13 @@
 package com.intuitveinc.product_service.service;
 
+import com.intuitveinc.common.exception.PartnerAuthenticationException;
+import com.intuitveinc.common.exception.PartnerNotFoundException;
+import com.intuitveinc.common.model.Partner;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 class PartnerServiceTest {
 
     @Test
