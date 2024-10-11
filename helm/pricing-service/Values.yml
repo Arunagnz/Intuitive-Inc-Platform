@@ -1,0 +1,18 @@
+replicaCount: 2
+
+image:
+  repository: <aws_account_id>.dkr.ecr.<region>.amazonaws.com/intuitive-inc/pricing-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "1000m"
