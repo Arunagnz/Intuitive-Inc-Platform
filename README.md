@@ -1,5 +1,20 @@
 # Intuitive Inc. Platform
 
+<p align="center">
+   <a href="https://github.com/arunagnz/slam-book/blob/master/LICENSE">
+      <img src="https://img.shields.io/badge/license-MIT-blue.svg" />
+   </a>
+   <a href="https://github.com/arunagnz/slam-book/actions/new">
+      <img src="https://img.shields.io/badge/build-passing-brightgreen" />
+   </a>
+   <a href="https://github.com/arunagnz/slam-book/issues">
+      <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" />
+   </a>
+   <a href="https://github.com/arunagnz/slam-book/pulls">
+      <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" />
+   </a>
+</p>
+
 ## Overview
 
 The **Intuitive Inc. Platform** is a cloud-based platform that enables partners to sell subscriptions for home appliances such as TVs, refrigerators, and water purifiers. The platform allows partners to manage products, pricing, and promotions, while the system dynamically adjusts prices based on supply and demand. The solution is designed to be highly scalable, extensible, and performant, supporting various pricing strategies, including monthly, yearly, and volume-based pricing.
