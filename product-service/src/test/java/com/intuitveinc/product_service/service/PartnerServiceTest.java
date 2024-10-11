@@ -24,8 +24,6 @@ class PartnerServiceTest {
 
         Mockito.when(partnerService.generateToken("accessKey", "secretKey")).thenThrow(new PartnerNotFoundException("Partner not found with access key: accessKey"));
         assertThrows(PartnerNotFoundException.class, () -> partnerService.generateToken("accessKey", "secretKey"));
-
-        Mockito.when(partnerService.generateToken("accessKey", "secretKey")).thenThrow(new PartnerAuthenticationException("Invalid secret key for partner with access key: accessKey"));
     }
 
     @Test
